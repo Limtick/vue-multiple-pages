@@ -5,12 +5,20 @@
 const path = require('path')
 
 module.exports = {
-  dev: {
+  // 相对路径
+  PAGES_PATH: './src/pages/**/*.html',
+  ENTRIES_PATH: './src/pages/**/*.js',
 
+  dev: {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    proxyTable: {
+      '/v2': {
+        target: 'https://api.douban.com',
+        changeOrigin: true
+      }
+    },
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST
@@ -49,7 +57,7 @@ module.exports = {
      * Source Maps
      */
 
-    productionSourceMap: true,
+    productionSourceMap: false,
     // https://webpack.js.org/configuration/devtool/#production
     devtool: '#source-map',
 
@@ -64,6 +72,8 @@ module.exports = {
     // View the bundle analyzer report after build finishes:
     // `npm run build --report`
     // Set to `true` or `false` to always turn it on or off
-    bundleAnalyzerReport: process.env.npm_config_report
+    bundleAnalyzerReport: process.env.npm_config_report,
+    // 打包是执行多次 需要每次给bundleAnalyzer设定一个port 此处的设置的是开始port
+    bundleAnalyzerPort: 8888
   }
 }

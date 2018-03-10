@@ -13,21 +13,13 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 const env = require('../config/prod.env')
 
-const webpackConfig = merge(baseWebpackConfig, {
-  module: {
-    rules: utils.styleLoaders({
-      sourceMap: config.build.productionSourceMap,
-      extract: true,
-      usePostCSS: true
-    })
-  },
-  devtool: config.build.productionSourceMap ? config.build.devtool : false,
-  output: {
-    path: config.build.assetsRoot,
-    filename: utils.assetsPath('js/[name].[chunkhash].js'),
-    chunkFilename: utils.assetsPath('js/[id].[chunkhash].js')
-  },
-  plugins: [
+/* 
+ * entry ------- 入口文件 -------------------- 'src/pages/{project}/{project}_main.js'
+ * project ----- 项目名称 会作为资源路径的一部分 '{project}'
+ * template ---- HtmlWebpackPlugin 模板路径 -- 'src/pages/{project}/{project}.html'
+ */
+const webpackConfig = (entry, project, template, analyzerPort) => {
+  let plugins = [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin({
       'process.env': env
@@ -43,7 +35,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     }),
     // extract css into its own file
     new ExtractTextPlugin({
-      filename: utils.assetsPath('css/[name].[contenthash].css'),
+      filename: utils.sourcesPath(project, 'css/[name].[contenthash].css'),
       // Setting the following option to `false` will not extract CSS from codesplit chunks.
       // Their CSS will instead be inserted dynamically with style-loader when the codesplit chunk has been loaded by webpack.
       // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`, 
@@ -61,8 +53,8 @@ const webpackConfig = merge(baseWebpackConfig, {
     // you can customize output by editing /index.html
     // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
-      filename: config.build.index,
-      template: 'index.html',
+      filename: utils.sourcesPath(project, 'index.html'),
+      template,
       inject: true,
       minify: {
         removeComments: true,
@@ -81,7 +73,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // split vendor js into its own file
     new webpack.optimize.CommonsChunkPlugin({
       name: 'vendor',
-      minChunks (module) {
+      minChunks(module) {
         // any required modules inside node_modules are extracted to vendor
         return (
           module.resource &&
@@ -117,29 +109,50 @@ const webpackConfig = merge(baseWebpackConfig, {
       }
     ])
   ]
-})
 
-if (config.build.productionGzip) {
-  const CompressionWebpackPlugin = require('compression-webpack-plugin')
+  if (config.build.productionGzip) {
+    const CompressionWebpackPlugin = require('compression-webpack-plugin')
+    plugins.push(
+      new CompressionWebpackPlugin({
+        asset: '[path].gz[query]',
+        algorithm: 'gzip',
+        test: new RegExp(
+          '\\.(' +
+          config.build.productionGzipExtensions.join('|') +
+          ')$'
+        ),
+        threshold: 10240,
+        minRatio: 0.8
+      })
+    )
+  }
 
-  webpackConfig.plugins.push(
-    new CompressionWebpackPlugin({
-      asset: '[path].gz[query]',
-      algorithm: 'gzip',
-      test: new RegExp(
-        '\\.(' +
-        config.build.productionGzipExtensions.join('|') +
-        ')$'
-      ),
-      threshold: 10240,
-      minRatio: 0.8
-    })
-  )
-}
+  if (config.build.bundleAnalyzerReport) {
+    const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+    // https://www.npmjs.com/package/webpack-bundle-analyzer
+    plugins.push(new BundleAnalyzerPlugin({
+      analyzerPort,
+      reportFilename: project
+    }))
+  }
 
-if (config.build.bundleAnalyzerReport) {
-  const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
-  webpackConfig.plugins.push(new BundleAnalyzerPlugin())
-}
+  return merge(baseWebpackConfig, {
+    entry,
+    module: {
+      rules: utils.styleLoaders({
+        sourceMap: config.build.productionSourceMap,
+        extract: true,
+        usePostCSS: true
+      })
+    },
+    devtool: config.build.productionSourceMap ? config.build.devtool : false,
+    output: {
+      path: config.build.assetsRoot,
+      filename: utils.sourcesPath(project, 'js/[name].[chunkhash].js'),
+      chunkFilename: utils.sourcesPath(project, 'js/[id].[chunkhash].js')
+    },
+    plugins
+  }
+)}
 
 module.exports = webpackConfig

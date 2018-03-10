@@ -13,7 +13,32 @@ const portfinder = require('portfinder')
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
 
+/* 
+  PAGES_PATH ---- 多页面 Html模板
+  ENTRIES_PATH -- 多页面入口文件
+*/
+const { PAGES_PATH, ENTRIES_PATH } = config
+
+const generateRewrites = () => {
+  let arr = []
+  Object.keys(pages).forEach(name => {
+    arr.push({
+      from: /.*/,
+      to: path.posix.join(config.dev.assetsPublicPath, `${name}.html`)
+    })
+  })
+
+  return arr
+}
+
+let pages = utils.getPages(PAGES_PATH)
+let entries = utils.getEntries(ENTRIES_PATH)
+let rewrites = generateRewrites()
+let messages = []
+
+// dev环境为多入口
 const devWebpackConfig = merge(baseWebpackConfig, {
+  entry: entries,
   module: {
     rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap, usePostCSS: true })
   },
@@ -24,9 +49,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   devServer: {
     clientLogLevel: 'warning',
     historyApiFallback: {
-      rewrites: [
-        { from: /.*/, to: path.posix.join(config.dev.assetsPublicPath, 'index.html') },
-      ],
+      // 多个
+      rewrites,
     },
     hot: true,
     contentBase: false, // since we use CopyWebpackPlugin.
@@ -51,12 +75,6 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NamedModulesPlugin(), // HMR shows correct file names in console on update.
     new webpack.NoEmitOnErrorsPlugin(),
-    // https://github.com/ampedandwired/html-webpack-plugin
-    new HtmlWebpackPlugin({
-      filename: 'index.html',
-      template: 'index.html',
-      inject: true
-    }),
     // copy custom static assets
     new CopyWebpackPlugin([
       {
@@ -79,10 +97,26 @@ module.exports = new Promise((resolve, reject) => {
       // add port to devServer config
       devWebpackConfig.devServer.port = port
 
+      // 生成多个HtmlWebpackPlugin
+      Object.keys(pages).forEach(name => {
+        let page = pages[name]
+        // https://github.com/ampedandwired/html-webpack-plugin
+        let config = {
+          filename: `${name}.html`,
+          template: page,
+          inject: true,
+          chunks: [name]
+        }
+
+        devWebpackConfig.plugins.push(new HtmlWebpackPlugin(config))
+        messages.push(`${name} is running here: http://${devWebpackConfig.devServer.host}:${port}/${name}.html`)
+      })
+
       // Add FriendlyErrorsPlugin
       devWebpackConfig.plugins.push(new FriendlyErrorsPlugin({
         compilationSuccessInfo: {
-          messages: [`Your application is running here: http://${devWebpackConfig.devServer.host}:${port}`],
+          // 多个message
+          messages,
         },
         onErrors: config.dev.notifyOnErrors
         ? utils.createNotifierCallback()

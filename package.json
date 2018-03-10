@@ -1,5 +1,5 @@
 {
-  "name": "y",
+  "name": "vue-multiple-pages",
   "version": "1.0.0",
   "description": "A Vue.js project",
   "author": "FCoder <18230118664@163.com>",
@@ -7,9 +7,14 @@
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
-    "build": "node build/build.js"
+    "build": "node build/build.js",
+    "server": "node server.js"
   },
   "dependencies": {
+    "axios": "^0.18.0",
+    "element-ui": "^2.2.1",
+    "js-cookie": "^2.2.0",
+    "moment": "^2.21.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },
