@@ -19,10 +19,10 @@ import {
  * @return {Object}        [Promise]
  */
 export const $get = (url, params) => {
-    if (access_token != Cookies.get('access_token')) {
-        window.location.reload()
-        return
-    }
+    // if (access_token != Cookies.get('access_token')) {
+    //     window.location.reload()
+    //     return
+    // }
     return new Promise((resolve, reject) => {
         Axios.get(url, {
             params: {
@@ -50,10 +50,10 @@ export const $get = (url, params) => {
  * @return {Object}         [Promise]
  */
 export const $post = (url, params, type) => {
-    if (access_token != Cookies.get('access_token')) {
-        window.location.reload()
-        return;
-    }
+    // if (access_token != Cookies.get('access_token')) {
+    //     window.location.reload()
+    //     return;
+    // }
     if (type == 'form') {
         /**
          * @description qs.stringify(param, option)

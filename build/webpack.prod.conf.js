@@ -100,11 +100,12 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
       minChunks: 3
     }),
 
-    // copy custom static assets
+    // copy custom static assets 
+    // 复制对应项目目录下的资源 todo: 同时也导致了无法复制static一级目录下的文件
     new CopyWebpackPlugin([
       {
-        from: path.resolve(__dirname, '../static'),
-        to: config.build.assetsSubDirectory,
+        from: path.resolve(__dirname, '../static' + `/${project}`),
+        to: config.build.assetsSubDirectory + `/${project}`,
         ignore: ['.*']
       }
     ])
@@ -139,11 +140,14 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
   return merge(baseWebpackConfig, {
     entry,
     module: {
-      rules: utils.styleLoaders({
-        sourceMap: config.build.productionSourceMap,
-        extract: true,
-        usePostCSS: true
-      })
+      rules: [
+        ...utils.baseLoaders(project),
+        ...utils.styleLoaders({
+          sourceMap: config.build.productionSourceMap,
+          extract: true,
+          usePostCSS: true
+        })
+      ]
     },
     devtool: config.build.productionSourceMap ? config.build.devtool : false,
     output: {

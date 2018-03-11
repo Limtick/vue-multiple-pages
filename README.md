@@ -10,7 +10,9 @@
 
 * src/pages/{<b>project</b>}{<b>project</b>}.html (必须)
 
-* static/{<b>project</b>}/** (存放对应项目的静态文件，可不创建)
+* static/{<b>project</b>}/** (存放对应项目的静态文件，对应项目的目录必须创建, 可为空)
+
+<font color="#3e7ac6" face="黑体">目前暂不支持static一级目录下的文件打包 所有的静态文件都需要放入一个具体的项目目录中</font>
 
 ## Build Setup
 
@@ -26,6 +28,14 @@ npm run build
 
 # build for production and view the bundle analyzer report
 npm run build --report
+
+# choose build
+# npm run build -- projectA projectB
+npm run build -- [projects]
+
+# choose build and view the bundle analyzer report
+# npm run build --report -- projectA projectB
+npm run build --report -- [projects]
 
 # serve for production
 npm run server

@@ -40,42 +40,50 @@ let entries = utils.getEntries(ENTRIES_PATH)
 const spinner = ora('building for production...')
 spinner.start()
 
-rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory), err => {
-  if (err) throw err
+// rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory), err => {
+  // if (err) throw err
 
-  if (needAnalyzerReport) {
+  // if (needAnalyzerReport) {
     // 使用webpack([配置对象](/config/)) 会导致 npm run build --report 不能成功运行
     // 这里使用循环执行webpack命令
     Object.keys(sourcesPath).forEach(project => {
       let entry = entries[project]
       let template = sourcesPath[project]
       let analyzerPort = bundleAnalyzerPort++
-      /* 
-       * 生成不同的打包配置
-       * entry ------- 入口文件 -------------------- 'src/pages/{project}/{project}_main.js'
-       * project ----- 项目名称 会作为资源路径的一部分 '{project}'
-       * template ---- HtmlWebpackPlugin 模板路径 -- 'src/pages/{project}/{project}.html'
-       */
-      webpack(webpackConfig(entry, project, template, analyzerPort), (err, stats) => {
-        spinner.stop()
-        if (err) throw err
-        
-        logInfo(stats)
-      })
-    })
-  } else {
-    webpack(getBuildConfig(), (err, multiStats) => {
-      spinner.stop()
-      if (err) throw err
       
-      let statsGroup = multiStats.stats
-      Object.keys(statsGroup).forEach(key => {
-        let stats = statsGroup[key]
-        logInfo(stats)
+      rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory + `/${project}`), err => {
+        if (err) throw err
+
+        /* 
+         * 生成不同的打包配置
+         * entry ------- 入口文件 -------------------- 'src/pages/{project}/{project}_main.js'
+         * project ----- 项目名称 会作为资源路径的一部分 '{project}'
+         * template ---- HtmlWebpackPlugin 模板路径 -- 'src/pages/{project}/{project}.html'
+         */
+        webpack(webpackConfig(entry, project, template, analyzerPort), (err, stats) => {
+          spinner.stop()
+          if (err) throw err
+
+          logInfo(stats)
+        })
+        
       })
+      // todo 可能在这里处理static一级目录下的文件
+
     })
-  }
-})
+  // } else {
+  //   webpack(getBuildConfig(), (err, multiStats) => {
+  //     spinner.stop()
+  //     if (err) throw err
+      
+  //     let statsGroup = multiStats.stats
+  //     Object.keys(statsGroup).forEach(key => {
+  //       let stats = statsGroup[key]
+  //       logInfo(stats)
+  //     })
+  //   })
+  // }
+// })
 
 const logInfo = stats => {
   process.stdout.write('===============================================\n')

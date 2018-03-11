@@ -1,17 +1,33 @@
 'use strict'
 const path = require('path')
 const glob = require('glob')
+const yargs = require('yargs')
 const config = require('../config')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const packageConfig = require('../package.json')
 
-exports.assetsPath = function (_path) {
+const argv = yargs.argv
+const limitList = argv._
+const needLimit = limitList.length != 0
+const limitMap = generateLimitMap(limitList)
+
+function generateLimitMap(list) {
+  let obj = {}
+  list.forEach(name => {
+    obj[name] = true
+  })
+  return obj
+}
+
+function assetsPath(_path) {
   const assetsSubDirectory = process.env.NODE_ENV === 'production'
     ? config.build.assetsSubDirectory
     : config.dev.assetsSubDirectory
 
   return path.posix.join(assetsSubDirectory, _path)
 }
+
+exports.assetsPath = assetsPath
 
 exports.sourcesPath = (sourcePath, _path) => {
   const assetsSubDirectory = process.env.NODE_ENV === 'production'
@@ -42,6 +58,12 @@ exports.getEntries = (globPath, separator = '_') => {
     if (isEntry) entries[pathname] = entry
   })
 
+  if (needLimit) {
+    Object.keys(entries).forEach(entry => {
+      if (!limitMap[entry]) delete entries[entry]
+    })
+  }
+
   return entries
 }
 
@@ -58,7 +80,43 @@ exports.getPages = globPath => {
     pages[basename] = page
   })
 
+  if (needLimit) {
+    Object.keys(pages).forEach(page => {
+      if (!limitMap[page]) delete pages[page]
+    })
+  }
+
   return pages
+}
+
+exports.baseLoaders = project => {
+  project = project + '/'
+  return [
+    {
+      test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+      loader: 'url-loader',
+      options: {
+        limit: 10000,
+        name: assetsPath(project + 'img/[name].[hash:7].[ext]')
+      }
+    },
+    {
+      test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
+      loader: 'url-loader',
+      options: {
+        limit: 10000,
+        name: assetsPath(project + 'media/[name].[hash:7].[ext]')
+      }
+    },
+    {
+      test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+      loader: 'url-loader',
+      options: {
+        limit: 10000,
+        name: assetsPath(project + 'fonts/[name].[hash:7].[ext]')
+      }
+    }
+  ]
 }
 
 exports.cssLoaders = function (options) {
