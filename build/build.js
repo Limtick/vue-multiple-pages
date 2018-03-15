@@ -50,7 +50,7 @@ spinner.start()
       let entry = entries[project]
       let template = sourcesPath[project]
       let analyzerPort = bundleAnalyzerPort++
-      
+
       rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory + `/${project}`), err => {
         if (err) throw err
 
@@ -68,8 +68,8 @@ spinner.start()
         })
         
       })
-      // todo 可能在这里处理static一级目录下的文件
-
+      // 在这里处理static一级目录下的文件 所有文件需要放在一个文件夹
+      utils.copyCommonSource()
     })
   // } else {
   //   webpack(getBuildConfig(), (err, multiStats) => {

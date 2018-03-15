@@ -104,7 +104,7 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
     // 复制对应项目目录下的资源 todo: 同时也导致了无法复制static一级目录下的文件
     new CopyWebpackPlugin([
       {
-        from: path.resolve(__dirname, '../static' + `/${project}`),
+        from: path.resolve(__dirname, `../${config.build.assetsSubDirectory}/${project}`),
         to: config.build.assetsSubDirectory + `/${project}`,
         ignore: ['.*']
       }

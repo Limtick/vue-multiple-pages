@@ -2,6 +2,9 @@
 const path = require('path')
 const glob = require('glob')
 const yargs = require('yargs')
+const shell = require('shelljs')
+const rm = require('rimraf')
+const os = require('os')
 const config = require('../config')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const packageConfig = require('../package.json')
@@ -35,6 +38,17 @@ exports.sourcesPath = (sourcePath, _path) => {
     : config.dev.assetsSubDirectory
 
   return path.posix.join(assetsSubDirectory, sourcePath, _path)
+}
+
+// 复制static公用资源
+exports.copyCommonSource = () => {
+  const from = path.resolve(__dirname, `../${config.build.assetsSubDirectory}/${config.build.commonSourcePath}`)
+  const to = path.join(config.build.assetsRoot, config.build.assetsSubDirectory + config.build.commonSourcePath)
+  rm(to, err => {
+    if (err) throw err
+    shell.mkdir('-p', config.build.commonSourcePath, config.build.assetsRoot)
+    shell.cp('-R', from, to)
+  })
 }
 
 /* 
@@ -87,6 +101,20 @@ exports.getPages = globPath => {
   }
 
   return pages
+}
+
+exports.getLocalIP = function() {
+  let iptable = {}
+  let ifaces = os.networkInterfaces()
+  Object.keys(ifaces).forEach(dev => {
+    ifaces[dev].forEach((details, alias) => {
+      if (details.family == 'IPv4') {
+        iptable[dev + (alias ? ':' + alias : '')] = details.address
+      }
+    })
+  })
+
+  return iptable[Object.keys(iptable)[0]]
 }
 
 exports.baseLoaders = project => {

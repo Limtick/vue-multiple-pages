@@ -12,6 +12,7 @@ const portfinder = require('portfinder')
 
 const HOST = process.env.HOST
 const PORT = process.env.PORT && Number(process.env.PORT)
+const IP = utils.getLocalIP()
 
 /* 
   PAGES_PATH ---- 多页面 Html模板
@@ -112,7 +113,7 @@ module.exports = new Promise((resolve, reject) => {
         }
 
         devWebpackConfig.plugins.push(new HtmlWebpackPlugin(config))
-        messages.push(`${name} is running here: http://${devWebpackConfig.devServer.host}:${port}/${name}.html`)
+        messages.push(`${name} is running here: \n http://${devWebpackConfig.devServer.host}:${port}/${name}.html \n http://${IP}:${port}/${name}.html \n`)
       })
 
       // Add FriendlyErrorsPlugin

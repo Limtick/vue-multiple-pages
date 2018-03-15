@@ -11,6 +11,8 @@ let pages = utils.getPages(PAGES_PATH)
 
 const HOST = 'localhost'
 const PORT = 3000
+const IP = utils.getLocalIP()
+
 const proxyTable = config.dev.proxyTable
 
 let app = express()
@@ -39,5 +41,6 @@ let server = app.listen(PORT, () => {
         let sourcePath = `static/${name}/index.html`
         console.log(chalk.yellow(`check ${name} at`))
         console.log(`http://${HOST}:${PORT}/${sourcePath}`)
+        console.log(`http://${IP}:${PORT}/${sourcePath}`)
     })
 })
