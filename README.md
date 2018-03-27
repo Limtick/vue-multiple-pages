@@ -16,7 +16,7 @@
 
 * <font color="#f54545" face="黑体">每个项目的所有静态文件都需要放入一个与项目名称相同的项目目录中</font>
 
-* <font color="#f54545" face="黑体">通用静态资源 需要放入{commonSourcePath} 默认为/public 项目名不可与通用资源文件夹名称相同</font>
+* <font color="#f54545" face="黑体">通用静态资源 需要放入{commonSourcePath} 默认为/assets 项目名不可与通用资源文件夹名称相同</font>
 
 * <font color="#f54545" face="黑体">目前暂不支持history路由模式</font>
 

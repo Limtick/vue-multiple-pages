@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <p><i class="el-icon-share"></i>one</p>
-    <img class="poster" src="/static/public/poster.jpg">
+    <img class="poster" src="/static/assets/poster.jpg">
     <router-view/>
   </div>
 </template>

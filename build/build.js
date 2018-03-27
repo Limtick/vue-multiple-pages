@@ -66,11 +66,10 @@ spinner.start()
 
           logInfo(stats)
         })
-        
       })
-      // 在这里处理static一级目录下的文件 所有文件需要放在一个文件夹
-      utils.copyCommonSource()
     })
+    // 在这里处理static一级目录下的文件 所有文件需要放在一个文件夹
+    utils.copyCommonSource()
   // } else {
   //   webpack(getBuildConfig(), (err, multiStats) => {
   //     spinner.stop()

@@ -46,7 +46,7 @@ exports.copyCommonSource = () => {
   const to = path.join(config.build.assetsRoot, config.build.assetsSubDirectory + config.build.commonSourcePath)
   rm(to, err => {
     if (err) throw err
-    shell.mkdir('-p', config.build.commonSourcePath, config.build.assetsRoot)
+    shell.mkdir('-p', path.join(config.build.assetsRoot, config.build.assetsSubDirectory), config.build.assetsRoot)
     shell.cp('-R', from, to)
   })
 }
