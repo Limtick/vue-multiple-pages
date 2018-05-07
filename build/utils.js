@@ -69,7 +69,9 @@ exports.getEntries = (globPath, separator = '_') => {
     const _len = splitPath.length
     // 入口文件必须在项目的第一级 以此过滤非入口文件的js文件
     const isEntry = splitPath[_len - 2] == pathname
-    if (isEntry) entries[pathname] = entry
+    if (isEntry) {
+      entries[pathname] = ['babel-polyfill', entry]
+    }
   })
 
   if (needLimit) {
@@ -117,15 +119,15 @@ exports.getLocalIP = function() {
   return iptable[Object.keys(iptable)[0]]
 }
 
-exports.baseLoaders = project => {
-  project = project + '/'
+exports.baseLoaders = (project, combineFont=false) => {
+  let fontPath = combineFont ? config.build.commonSourcePath : project
   return [
     {
       test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
       loader: 'url-loader',
       options: {
         limit: 10000,
-        name: assetsPath(project + 'img/[name].[hash:7].[ext]')
+        name: assetsPath(project + '/img/[name].[hash:7].[ext]')
       }
     },
     {
@@ -133,7 +135,7 @@ exports.baseLoaders = project => {
       loader: 'url-loader',
       options: {
         limit: 10000,
-        name: assetsPath(project + 'media/[name].[hash:7].[ext]')
+        name: assetsPath(project + '/media/[name].[hash:7].[ext]')
       }
     },
     {
@@ -141,7 +143,7 @@ exports.baseLoaders = project => {
       loader: 'url-loader',
       options: {
         limit: 10000,
-        name: assetsPath(project + 'fonts/[name].[hash:7].[ext]')
+        name: assetsPath(fontPath + '/fonts/[name].[hash:7].[ext]')
       }
     }
   ]

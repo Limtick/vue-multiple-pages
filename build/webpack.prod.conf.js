@@ -138,10 +138,10 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
   }
 
   return merge(baseWebpackConfig, {
-    entry,
+    entry: ['babel-polyfill', entry],
     module: {
       rules: [
-        ...utils.baseLoaders(project),
+        ...utils.baseLoaders(project, true),
         ...utils.styleLoaders({
           sourceMap: config.build.productionSourceMap,
           extract: true,
