@@ -29,6 +29,10 @@ npm install
 # serve with hot reload at localhost:{config.dev.port}
 npm run dev
 
+# add page
+# npm run add:page testA testB
+npm run add:page [projects]
+
 # build for production with minification
 npm run build
 
@@ -36,12 +40,12 @@ npm run build
 npm run build --report
 
 # choose build
-# npm run build -- projectA projectB
-npm run build -- [projects]
+# npm run build projectA projectB
+npm run build [projects]
 
 # choose build and view the bundle analyzer report
-# npm run build --report -- projectA projectB
-npm run build --report -- [projects]
+# npm run build projectA projectB --report 
+npm run build [projects] --report 
 
 # serve for production
 npm run server

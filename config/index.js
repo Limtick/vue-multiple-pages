@@ -4,6 +4,11 @@
 
 const path = require('path')
 
+// 静态目录
+const STATIC_PATH = 'static'
+// 版本文件夹
+const VERSION_PATH = ''
+
 module.exports = {
   // 相对路径
   PAGES_PATH: './src/pages/**/*.html',
@@ -11,13 +16,10 @@ module.exports = {
 
   dev: {
     // Paths
-    assetsSubDirectory: 'static',
+    assetsSubDirectory: STATIC_PATH + VERSION_PATH,
     assetsPublicPath: '/',
     proxyTable: {
-      '/v2': {
-        target: 'https://api.douban.com',
-        changeOrigin: true
-      }
+      
     },
 
     // Various Dev Server settings
@@ -50,7 +52,7 @@ module.exports = {
 
     // Paths
     assetsRoot: path.resolve(__dirname, '../dist'),
-    assetsSubDirectory: 'static',
+    assetsSubDirectory: STATIC_PATH + VERSION_PATH,
     assetsPublicPath: '/',
     commonSourcePath: '/assets',
 
