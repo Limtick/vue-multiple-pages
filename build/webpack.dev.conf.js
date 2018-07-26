@@ -42,7 +42,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
   entry: entries,
   module: {
     rules: [
-      ...utils.baseLoaders(''),
+      ...utils.baseLoaders(),
       ...utils.styleLoaders({ sourceMap: config.dev.cssSourceMap, usePostCSS: true })
     ]
   },
@@ -70,7 +70,8 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     quiet: true, // necessary for FriendlyErrorsPlugin
     watchOptions: {
       poll: config.dev.poll,
-    }
+    },
+    disableHostCheck: config.dev.disableHostCheck
   },
   plugins: [
     new webpack.DefinePlugin({
@@ -82,7 +83,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
     // copy custom static assets
     new CopyWebpackPlugin([
       {
-        from: path.resolve(__dirname, '../static'),
+        from: path.resolve(__dirname, '../' + config.dev.assetsSubDirectory),
         to: config.dev.assetsSubDirectory,
         ignore: ['.*']
       }

@@ -6,6 +6,7 @@ process.env.NODE_ENV = 'production'
 const ora = require('ora')
 const rm = require('rimraf')
 const path = require('path')
+const fs = require('fs')
 const chalk = require('chalk')
 const webpack = require('webpack')
 const utils = require('./utils')
@@ -20,18 +21,6 @@ const webpackConfig = require('./webpack.prod.conf')
 const { PAGES_PATH, ENTRIES_PATH } = config
 const needAnalyzerReport = config.build.bundleAnalyzerReport
 
-const getBuildConfig = () => {
-  let configs = []
-  Object.keys(sourcesPath).forEach(project => {
-    let entry = entries[project]
-    let template = sourcesPath[project]
-    let analyzerPort = bundleAnalyzerPort++
-    configs.push(webpackConfig(entry, project, template, analyzerPort))
-  })
-
-  return configs
-}
-
 let bundleAnalyzerPort = config.build.bundleAnalyzerPort
 
 let sourcesPath = utils.getPages(PAGES_PATH)
@@ -40,49 +29,38 @@ let entries = utils.getEntries(ENTRIES_PATH)
 const spinner = ora('building for production...')
 spinner.start()
 
-// rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory), err => {
-  // if (err) throw err
+fs.readdir(path.join(config.build.assetsSubDirectory), (err, files) => {
+  if (err) throw err
 
-  // if (needAnalyzerReport) {
-    // 使用webpack([配置对象](/config/)) 会导致 npm run build --report 不能成功运行
-    // 这里使用循环执行webpack命令
-    Object.keys(sourcesPath).forEach(project => {
-      let entry = entries[project]
-      let template = sourcesPath[project]
-      let analyzerPort = bundleAnalyzerPort++
+  // 使用webpack([配置对象](/config/)) 会导致 npm run build --report 不能成功运行
+  // 这里使用循环执行webpack命令
+  Object.keys(sourcesPath).forEach(project => {
+    let entry = entries[project]
+    let template = sourcesPath[project]
+    let analyzerPort = bundleAnalyzerPort++
 
-      rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory + `/${project}`), err => {
+    rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory + `/${project}`), err => {
+      if (err) throw err
+
+      /* 
+       * 生成不同的打包配置
+       * entry ------- 入口文件 -------------------- 'src/pages/{project}/{project}_main.js'
+       * project ----- 项目名称 会作为资源路径的一部分 '{project}'
+       * template ---- HtmlWebpackPlugin 模板路径 -- 'src/pages/{project}/{project}.html'
+       */
+      // 静态目录存在 调用 CopyWebpackPlugin
+      let useCopyPlugin = files.includes(project)
+      webpack(webpackConfig(entry, project, template, analyzerPort, useCopyPlugin), (err, stats) => {
+        spinner.stop()
         if (err) throw err
 
-        /* 
-         * 生成不同的打包配置
-         * entry ------- 入口文件 -------------------- 'src/pages/{project}/{project}_main.js'
-         * project ----- 项目名称 会作为资源路径的一部分 '{project}'
-         * template ---- HtmlWebpackPlugin 模板路径 -- 'src/pages/{project}/{project}.html'
-         */
-        webpack(webpackConfig(entry, project, template, analyzerPort), (err, stats) => {
-          spinner.stop()
-          if (err) throw err
-
-          logInfo(stats)
-        })
+        logInfo(stats)
       })
     })
-    // 在这里处理static一级目录下的文件 所有文件需要放在一个文件夹
-    utils.copyCommonSource()
-  // } else {
-  //   webpack(getBuildConfig(), (err, multiStats) => {
-  //     spinner.stop()
-  //     if (err) throw err
-      
-  //     let statsGroup = multiStats.stats
-  //     Object.keys(statsGroup).forEach(key => {
-  //       let stats = statsGroup[key]
-  //       logInfo(stats)
-  //     })
-  //   })
-  // }
-// })
+  })
+  // 在这里处理 static 目录下的公用资源文件 所有文件需要放在一个文件夹
+  utils.copyCommonSource()
+})
 
 const logInfo = stats => {
   process.stdout.write('===============================================\n')

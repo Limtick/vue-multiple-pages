@@ -10,32 +10,38 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-
 const env = require('../config/prod.env')
 
 /* 
- * entry ------- 入口文件 -------------------- 'src/pages/{project}/{project}_main.js'
- * project ----- 项目名称 会作为资源路径的一部分 '{project}'
- * template ---- HtmlWebpackPlugin 模板路径 -- 'src/pages/{project}/{project}.html'
+ * entry ------- 入口文件 -------------------- 'src/pages/{projectName}/{projectName}_main.js'
+ * projectName ----- 项目名称 会作为资源路径的一部分 '{projectName}'
+ * template ---- HtmlWebpackPlugin 模板路径 -- 'src/pages/{projectName}/{projectName}.html'
  */
-const webpackConfig = (entry, project, template, analyzerPort) => {
+const webpackConfig = (entry, projectName, template, analyzerPort, useCopyPlugin=true) => {
   let plugins = [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
     new webpack.DefinePlugin({
       'process.env': env
     }),
-    new UglifyJsPlugin({
-      uglifyOptions: {
-        compress: {
-          warnings: false
-        }
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
       },
-      sourceMap: config.build.productionSourceMap,
-      parallel: true
+      comments: false
     }),
+    // new UglifyJsPlugin({
+    //   uglifyOptions: {
+    //     compress: {
+    //       warnings: false
+    //     },
+    //     comments: false
+    //   },
+    //   sourceMap: config.build.productionSourceMap,
+    //   parallel: true
+    // }),
     // extract css into its own file
     new ExtractTextPlugin({
-      filename: utils.sourcesPath(project, 'css/[name].[contenthash].css'),
+      filename: utils.sourcesPath(projectName, 'css/[name].[contenthash].css'),
       // Setting the following option to `false` will not extract CSS from codesplit chunks.
       // Their CSS will instead be inserted dynamically with style-loader when the codesplit chunk has been loaded by webpack.
       // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`, 
@@ -53,7 +59,7 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
     // you can customize output by editing /index.html
     // see https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({
-      filename: utils.sourcesPath(project, 'index.html'),
+      filename: utils.sourcesPath(projectName, 'index.html'),
       template,
       inject: true,
       minify: {
@@ -98,17 +104,7 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
       async: 'vendor-async',
       children: true,
       minChunks: 3
-    }),
-
-    // copy custom static assets 
-    // 复制对应项目目录下的资源 todo: 同时也导致了无法复制static一级目录下的文件
-    new CopyWebpackPlugin([
-      {
-        from: path.resolve(__dirname, `../${config.build.assetsSubDirectory}/${project}`),
-        to: config.build.assetsSubDirectory + `/${project}`,
-        ignore: ['.*']
-      }
-    ])
+    })
   ]
 
   if (config.build.productionGzip) {
@@ -133,15 +129,27 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
     // https://www.npmjs.com/package/webpack-bundle-analyzer
     plugins.push(new BundleAnalyzerPlugin({
       analyzerPort,
-      reportFilename: project
+      reportFilename: projectName
     }))
   }
 
+  if (useCopyPlugin) {
+    // 复制对应项目目录下的资源 todo: 同时也导致了无法复制static目录下的文件
+    plugins.push(new CopyWebpackPlugin([
+        {
+          from: path.resolve(__dirname, `../${config.build.assetsSubDirectory}/${projectName}`),
+          to: config.build.assetsSubDirectory + `/${projectName}`,
+          ignore: ['.*']
+        }
+      ])
+    )
+  }
+  
   return merge(baseWebpackConfig, {
     entry,
     module: {
       rules: [
-        ...utils.baseLoaders(project, true),
+        ...utils.baseLoaders(projectName),
         ...utils.styleLoaders({
           sourceMap: config.build.productionSourceMap,
           extract: true,
@@ -152,8 +160,8 @@ const webpackConfig = (entry, project, template, analyzerPort) => {
     devtool: config.build.productionSourceMap ? config.build.devtool : false,
     output: {
       path: config.build.assetsRoot,
-      filename: utils.sourcesPath(project, 'js/[name].[chunkhash].js'),
-      chunkFilename: utils.sourcesPath(project, 'js/[id].[chunkhash].js')
+      filename: utils.sourcesPath(projectName, 'js/[name].[chunkhash].js'),
+      chunkFilename: utils.sourcesPath(projectName, 'js/[id].[chunkhash].js')
     },
     plugins
   }

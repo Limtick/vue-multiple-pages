@@ -13,13 +13,19 @@ module.exports = {
   // 相对路径
   PAGES_PATH: './src/pages/**/*.html',
   ENTRIES_PATH: './src/pages/**/*.js',
+  
+  STATIC_PATH,
+  VERSION_PATH,
 
   dev: {
     // Paths
     assetsSubDirectory: STATIC_PATH + VERSION_PATH,
     assetsPublicPath: '/',
     proxyTable: {
-      
+      '/api': {
+        target: '',
+        changeOrigin: true
+      }
     },
 
     // Various Dev Server settings
@@ -29,7 +35,7 @@ module.exports = {
     errorOverlay: true,
     notifyOnErrors: true,
     poll: false, // https://webpack.js.org/configuration/dev-server/#devserver-watchoptions-
-
+    disableHostCheck: true,
     
     /**
      * Source Maps

@@ -40,7 +40,7 @@ exports.sourcesPath = (sourcePath, _path) => {
   return path.posix.join(assetsSubDirectory, sourcePath, _path)
 }
 
-// 复制static公用资源
+// 复制公用资源
 exports.copyCommonSource = () => {
   const from = path.resolve(__dirname, `../${config.build.assetsSubDirectory}/${config.build.commonSourcePath}`)
   const to = path.join(config.build.assetsRoot, config.build.assetsSubDirectory + config.build.commonSourcePath)
@@ -62,8 +62,14 @@ exports.getEntries = (globPath, separator = '_') => {
   glob.sync(globPath).forEach(entry => {
     basename = path.basename(entry, path.extname(entry))
     // 入口文件 - 命名格式 默认为 {pathname}_main.js 
-    // 此处split()[0]为简单处理 - {pathname}不可包含{separator} 否则会取值错误
-    pathname = basename.split(separator)[0]
+    let arr = basename.split(separator)
+    
+    if (arr.length == 1) {
+      pathname = basename.split(separator)[0]
+    } else {
+      arr = arr.slice(0, arr.length - 1)
+      pathname = arr.join(separator)
+    }
     
     const splitPath = entry.split('/')
     const _len = splitPath.length
@@ -79,7 +85,7 @@ exports.getEntries = (globPath, separator = '_') => {
       if (!limitMap[entry]) delete entries[entry]
     })
   }
-
+  
   return entries
 }
 
@@ -110,7 +116,7 @@ exports.getLocalIP = function() {
   let ifaces = os.networkInterfaces()
   Object.keys(ifaces).forEach(dev => {
     ifaces[dev].forEach((details, alias) => {
-      if (details.family == 'IPv4') {
+      if (details.family === 'IPv4' && details.address !== '127.0.0.1' && !details.internal) {
         iptable[dev + (alias ? ':' + alias : '')] = details.address
       }
     })
@@ -119,15 +125,15 @@ exports.getLocalIP = function() {
   return iptable[Object.keys(iptable)[0]]
 }
 
-exports.baseLoaders = (project, combineFont=false) => {
-  let fontPath = combineFont ? config.build.commonSourcePath : project
+exports.baseLoaders = (projectName='', combineFont=true) => {
+  let fontPath = combineFont ? config.build.commonSourcePath : projectName
   return [
     {
       test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
       loader: 'url-loader',
       options: {
         limit: 10000,
-        name: assetsPath(project + '/img/[name].[hash:7].[ext]')
+        name: assetsPath(projectName + '/img/[name].[hash:7].[ext]')
       }
     },
     {
@@ -135,7 +141,7 @@ exports.baseLoaders = (project, combineFont=false) => {
       loader: 'url-loader',
       options: {
         limit: 10000,
-        name: assetsPath(project + '/media/[name].[hash:7].[ext]')
+        name: assetsPath(projectName + '/media/[name].[hash:7].[ext]')
       }
     },
     {

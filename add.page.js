@@ -7,15 +7,20 @@ const config = require('./config')
 const argv = yargs.argv
 
 const pages = argv._
-const FORBIDDEN_PATH = config.build.commonSourcePath.substring(1)
+const forbidden = config.build.commonSourcePath.substring(1)
 
-const HTML_TEMPLATE = path.join(__dirname, 'temp_html/index.html')
-
+const TEMPLATE_PATH = path.join(__dirname, 'template_page')
 const ENTRY_PATH = page => path.join(__dirname, 'src/pages/' + page)
 const STATIC_RESOURCE_PATH = page => path.join(__dirname, config.build.assetsSubDirectory + '/' + page)
 
-const ENTRY = page => path.join(ENTRY_PATH(page) + '/' + page + '_main.js')
+const HTML_TEMPLATE = path.join(TEMPLATE_PATH, 'index.html')
+const ENTRY_TEMPLATE = path.join(TEMPLATE_PATH, 'index.js')
+const APP_TEMPLATE = path.join(TEMPLATE_PATH, 'App.vue')
+
 const ENTRY_HTML = page => path.join(ENTRY_PATH(page) + '/' + page + '.html')
+const ENTRY_MAIN = page => path.join(ENTRY_PATH(page) + '/' + page + '_main.js')
+const ENTRY_APP = page => path.join(ENTRY_PATH(page) + '/App.vue')
+
 const ENTRY_README = page => path.join(ENTRY_PATH(page) + '/README.md')
 
 const currentPages = {}
@@ -25,14 +30,14 @@ fs.readdirSync(path.join(__dirname, 'src/pages')).forEach(file => {
 })
 
 pages.forEach(page => {
-    if (page == FORBIDDEN_PATH) {
-        console.log(chalk.red(FORBIDDEN_PATH + ' is not allowed to create! \n'));
+    if (page == forbidden) {
+        console.log(chalk.red(forbidden + ' is not allowed to create'));
         return
     }
 
     if (currentPages[page]) {
         console.log(
-            chalk.green(page) + ' has been created before!\n' +
+            chalk.yellow(page) + chalk.red(' has been created before!\n') +
             'Please check: ' + chalk.yellow(ENTRY_PATH(page))
         )
         return
@@ -40,15 +45,22 @@ pages.forEach(page => {
 
     shell.mkdir('-p', ENTRY_PATH(page))
 
-    // 创建空入口文件和html
+    // 创建入口文件 目前默认是新建vue单页项目
+    // todo 增加是否新建为vue单页项目配置项
     let html = fs.readFileSync(HTML_TEMPLATE)
-    fs.writeFileSync(ENTRY(page), '')
+    let entry = fs.readFileSync(ENTRY_TEMPLATE)
+    let app = fs.readFileSync(APP_TEMPLATE)
+
     fs.writeFileSync(ENTRY_HTML(page), html)
+    fs.writeFileSync(ENTRY_MAIN(page), entry)
+    fs.writeFileSync(ENTRY_APP(page), app)
+
     fs.writeFileSync(ENTRY_README(page), '# ' + page)
-    
+
     // 静态资源目录
     shell.mkdir('-p', STATIC_RESOURCE_PATH(page))
-    console.log(chalk.green(page + ' created successfully!'));
-    console.log('begin in: \n' + ENTRY_PATH(page));
-    console.log('add resouces in: \n' + STATIC_RESOURCE_PATH(page) + '\n');
+    fs.writeFileSync(path.join(STATIC_RESOURCE_PATH(page) + '/.gitkeep'), '')
+    console.log(chalk.yellow(page) + chalk.green(' successfully created!'));
+    console.log('begin in: \n' + chalk.yellow(ENTRY_PATH(page)));
+    console.log('add static resouces in: \n' + chalk.yellow(STATIC_RESOURCE_PATH(page)) + '\n');
 })
